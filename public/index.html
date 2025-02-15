@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="max-w-4xl mx-auto mt-10">
+        <h1 class="text-3xl font-bold text-center mb-5">Global Chat</h1>
+        <div id="chatBox" class="bg-white shadow-md rounded p-4 h-[500px] overflow-y-auto mb-4">
+            <!-- Messages will appear here -->
+        </div>
+        <input id="message" class="border rounded p-2 w-full" type="text" placeholder="Type your message...">
+        <button onclick="sendMessage()" class="bg-blue-500 text-white p-2 rounded w-full mt-2">Send</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const chatBox = document.getElementById('chatBox');
+        const messageInput = document.getElementById('message');
+
+        // Get name from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('name') || 'Anonymous';
+
+        socket.on('receiveMessage', (data) => {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('mb-2', 'p-2', 'bg-gray-200', 'rounded');
+            messageElement.innerHTML = `<strong>${data.username}</strong>: ${data.message}`;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        function sendMessage() {
+            const message = messageInput.value;
+            if (message.trim() !== '') {
+                socket.emit('sendMessage', { username: username, message: message });
+                messageInput.value = '';
+            }
+        }
+    </script>
+</body>
+</html>
